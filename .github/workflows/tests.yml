@@ -1,0 +1,16 @@
+name: Tests
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check shell syntax
+        run: bash -n install.sh tests/test.sh
+      - name: Run tests with isolated desktop commands
+        run: bash tests/test.sh
