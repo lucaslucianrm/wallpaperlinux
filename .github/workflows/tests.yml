@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check shell syntax
-        run: bash -n install.sh tests/test.sh build_appimage.sh appimage/AppRun tests/test_appimage.sh
+        run: bash -n install.sh tests/test.sh build_appimage.sh appimage/AppRun appimage/result.sh tests/test_appimage.sh
       - name: Run tests with isolated desktop commands
         run: bash tests/test.sh
       - name: Check AppImage entry point

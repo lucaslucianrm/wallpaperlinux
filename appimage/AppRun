@@ -2,4 +2,14 @@
 set -Eeuo pipefail
 export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 appdir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-exec /bin/bash "$appdir/usr/bin/rolimnet-wallpaper" "$@"
+source "$appdir/result.sh"
+case "${1:-install}" in
+    -h|--help|help) exec /bin/bash "$appdir/usr/bin/rolimnet-wallpaper" "$@" ;;
+esac
+success='Operação concluída com sucesso.'
+case "${1:-install}" in
+    install) success='Papel de parede instalado e aplicado com sucesso. Atualizações automáticas a cada 1 hora.' ;;
+    update|session) success='Papel de parede atualizado com sucesso.' ;;
+    uninstall) success='Atualização automática desinstalada com sucesso. A imagem em uso foi preservada.' ;;
+esac
+run_with_result 'Wallpaper Rolimnet' "$success" /bin/bash "$appdir/usr/bin/rolimnet-wallpaper" "$@"

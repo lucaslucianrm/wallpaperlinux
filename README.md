@@ -28,6 +28,15 @@ de uma hora e instala uma cópia persistente do agente. O AppImage pode ser remo
 após instalar. É necessário systemd de usuário e um dos desktops já suportados;
 o pacote não substitui as ferramentas de configuração do desktop.
 
+Ao executar uma operação pelo AppImage, ele informa sucesso ou erro e mantém o
+código de saída original. Com interface gráfica e sem terminal, abre um aviso
+usando Zenity, KDialog, xmessage ou notify-send, conforme disponível. Sem essas
+ferramentas, a mensagem fica na saída do terminal. Em falhas, inclui as últimas
+linhas do diagnóstico; um aviso de sucesso só aparece se a operação retornar zero.
+Ajuda não abre avisos. As tarefas agendadas usam o agente instalado diretamente
+e não exibem janelas. No inventário, o aviso roda na sessão do usuário depois da
+autenticação, sem tentar abrir uma janela como root.
+
 Para gerar o pacote, obtenha o [appimagetool oficial](https://github.com/AppImage/appimagetool/releases)
 e execute na pasta do projeto:
 
