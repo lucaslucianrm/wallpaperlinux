@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Rolimnet Wallpaper
+Comment=Instalar a atualização automática do papel de parede Rolimnet
+Exec=rolimnet-wallpaper
+Icon=rolimnet-wallpaper
+Terminal=false
+Categories=Utility;

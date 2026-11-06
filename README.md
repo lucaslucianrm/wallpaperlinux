@@ -10,6 +10,36 @@ Não cria políticas ou bloqueios de configuração. Você continua livre para t
 papel de parede manualmente; a próxima atualização agendada reaplicará a imagem da URL.
 Não modifica senha, bloqueador de tela, temas do sistema ou tempo de inatividade.
 
+## AppImage com o ícone Windows
+
+O pacote `Rolimnet-Wallpaper-x86_64.AppImage` inclui o ícone original do Windows,
+o iniciador e o instalador existente. O AppImage é específico de arquitetura;
+os arquivos Bash originais continuam disponíveis.
+
+```bash
+chmod +x Rolimnet-Wallpaper-x86_64.AppImage
+./Rolimnet-Wallpaper-x86_64.AppImage
+```
+
+Sem FUSE, use `./Rolimnet-Wallpaper-x86_64.AppImage --appimage-extract-and-run`.
+
+Execute como usuário da sessão gráfica, sem sudo. O instalador mantém o timer
+de uma hora e instala uma cópia persistente do agente. O AppImage pode ser removido
+após instalar. É necessário systemd de usuário e um dos desktops já suportados;
+o pacote não substitui as ferramentas de configuração do desktop.
+
+Para gerar o pacote, obtenha o [appimagetool oficial](https://github.com/AppImage/appimagetool/releases)
+e execute na pasta do projeto:
+
+```bash
+APPIMAGETOOL=/caminho/appimagetool-x86_64.AppImage bash build_appimage.sh
+```
+
+O empacotador baixa seu runtime se necessário. Para usar um runtime já baixado,
+defina `APPIMAGETOOL_RUNTIME_FILE=/caminho/runtime-x86_64`. O ícone é incluído
+no arquivo; sua miniatura no gerenciador de arquivos depende da integração
+AppImage do desktop. Não cria integração global nem altera políticas do Polkit.
+
 ## Instalação
 
 Baixe o arquivo `rolimnet-wallpaper`, abra um terminal na pasta do arquivo e execute:
