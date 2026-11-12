@@ -3,6 +3,13 @@ set -Eeuo pipefail
 project=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 stage=$(mktemp -d)
 trap 'rm -rf -- "$stage"' EXIT
+for operation in system-install system-update system-uninstall; do
+    if bash "$project/install.sh" "$operation" > "$stage/unprivileged" 2>&1; then
+        echo "FAIL: operação global sem autorização: $operation"; exit 1
+    fi
+    [[ $(cat "$stage/unprivileged") == *'requer autorização administrativa'* ]]
+done
+echo 'ok - operações globais rejeitam execução sem privilégio'
 source "$project/install.sh"
 init_system_paths
 SYSTEM_ETC="$stage/etc"

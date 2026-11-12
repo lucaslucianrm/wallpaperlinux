@@ -202,7 +202,17 @@ init_system_paths() {
     SYSTEM_SCRIPT=/usr/local/lib/rolimnet-wallpaper/agent.sh
 }
 
-require_root() { ((EUID == 0)) || die 'Esta operação do sistema requer autorização administrativa.'; }
+require_root() {
+    ((EUID == 0)) || die 'Esta operação do sistema requer autorização administrativa.'
+    local path owner permissions
+    for path in "$SYSTEM_LIB" "$SYSTEM_STATE" "$(dirname -- "$SYSTEM_IMAGE")" "$SYSTEM_SCRIPT"; do
+        [[ ! -L $path ]] || die "Caminho global não pode ser link simbólico: $path"
+        if [[ -e $path ]]; then
+            read -r owner permissions < <(stat -c '%u %a' -- "$path")
+            [[ $owner == 0 ]] && (( (8#$permissions & 0022) == 0 )) || die "Caminho global precisa pertencer a root e impedir escrita de outros: $path"
+        fi
+    done
+}
 
 # Lê INI como dados, respeitando a ordem dos arquivos, sem source/eval.
 ini_get() {
