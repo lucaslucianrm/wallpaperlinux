@@ -8,7 +8,7 @@ case "${1:-install}" in
 esac
 success='Operação concluída com sucesso.'
 case "${1:-install}" in
-    install) success='Papel de parede instalado e aplicado com sucesso. Atualizações automáticas a cada 1 hora.' ;;
+    install) success='Instalação concluída com sucesso. Papel de parede aplicado. Atualizações automáticas a cada 1 hora.' ;;
     update|session) success='Papel de parede atualizado com sucesso.' ;;
     uninstall) success='Atualização automática desinstalada com sucesso. A imagem em uso foi preservada.' ;;
 esac

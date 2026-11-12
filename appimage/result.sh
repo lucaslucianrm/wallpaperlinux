@@ -9,6 +9,8 @@ run_with_result() (
     if ((code == 0)); then
         kind=info
         message=$success
+        warnings=$(awk '/^AVISO:/' "$log")
+        if [[ -n $warnings ]]; then message+=$'\n\n'"$warnings"; fi
     else
         kind=error
         message="A operação falhou ou foi cancelada (código $code)."$'\n\n'"$(tail -n 12 -- "$log")"

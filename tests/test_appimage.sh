@@ -35,3 +35,7 @@ bash "$stage/AppRun" update > "$stage/failure" || code=$?
 [[ $code == 22 ]]
 [[ $(cat "$NOTICE_LOG") == *'--error'* && $(cat "$NOTICE_LOG") == *'falha simulada ao baixar imagem'* ]]
 echo 'ok - avisos gráficos de sucesso/erro com motivo e código original'
+printf 'echo "AVISO: login não suportado neste tema"\n' > "$stage/usr/bin/rolimnet-wallpaper"
+bash "$stage/AppRun" install > "$stage/limited"
+[[ $(cat "$NOTICE_LOG") == *'login não suportado neste tema'* ]]
+echo 'ok - aviso de compatibilidade permanece visível no resultado gráfico'

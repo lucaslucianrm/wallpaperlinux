@@ -1,6 +1,6 @@
 # Rolimnet Wallpaper para Linux
 
-**Basta baixar e executar o arquivo `install.sh`.** Ele contém o instalador e o
+**Baixe e execute `Rolimnet-Wallpaper-x86_64.AppImage` ou `install.sh`.** Ele contém o instalador e o
 programa que continuará executando. Não precisa de Python, Git, Node ou bibliotecas externas.
 
 Baixa a imagem de **https://core.rolimnet.com/api/wallpaper/image**, aplica o wallpaper
@@ -8,7 +8,7 @@ imediatamente e cria uma tarefa de atualização **a cada 1 hora**.
 
 Não cria políticas ou bloqueios de configuração. Você continua livre para trocar o
 papel de parede manualmente; a próxima atualização agendada reaplicará a imagem da URL.
-Não modifica senha, bloqueador de tela, temas do sistema ou tempo de inatividade.
+Não modifica senha, autenticação, bloqueio automático, temas do sistema ou tempo de inatividade.
 
 ## AppImage com o ícone Windows
 
@@ -28,14 +28,25 @@ de uma hora e instala uma cópia persistente do agente. O AppImage pode ser remo
 após instalar. É necessário systemd de usuário e um dos desktops já suportados;
 o pacote não substitui as ferramentas de configuração do desktop.
 
+A instalação solicita autenticação do sistema: Polkit (`pkexec`) ao abrir pela
+interface gráfica, ou `sudo` no terminal. Cancelamento ou senha recusada interrompe
+a instalação antes de gravar arquivos. O agente do desktop continua executando como usuário;
+não execute o instalador com sudo. A autorização instala também o serviço global
+da tela de login quando compatível. Atualizações automáticas não pedem senha.
+A remoção dessa integração global solicita autorização administrativa.
+Políticas locais e credenciais já autorizadas podem dispensar nova digitação.
+
+A mensagem **“Instalação concluída com sucesso”** aparece no terminal somente após
+aplicar a primeira imagem e ativar o timer. No AppImage, aparece também o aviso de
+sucesso do desktop quando houver uma ferramenta de diálogo disponível.
+
 Ao executar uma operação pelo AppImage, ele informa sucesso ou erro e mantém o
 código de saída original. Com interface gráfica e sem terminal, abre um aviso
 usando Zenity, KDialog, xmessage ou notify-send, conforme disponível. Sem essas
 ferramentas, a mensagem fica na saída do terminal. Em falhas, inclui as últimas
 linhas do diagnóstico; um aviso de sucesso só aparece se a operação retornar zero.
 Ajuda não abre avisos. As tarefas agendadas usam o agente instalado diretamente
-e não exibem janelas. No inventário, o aviso roda na sessão do usuário depois da
-autenticação, sem tentar abrir uma janela como root.
+e não exibem janelas. O aviso roda na sessão do usuário, após a autenticação.
 
 Para gerar o pacote, obtenha o [appimagetool oficial](https://github.com/AppImage/appimagetool/releases)
 e execute na pasta do projeto:
@@ -88,6 +99,7 @@ arquivo local para fazer essa cópia. Não precisa baixar o restante do reposit�
 - Linux com **Bash 4.3+**, curl com HTTPS e **systemd de usuário funcionando**.
 - Ferramentas comuns do Linux: `flock` (util-linux), `sha256sum`, `od`, `mktemp`,
   `date` e demais comandos do coreutils.
+- Para instalar: `sudo` no terminal ou `pkexec` com agente Polkit na sessão gráfica.
 - O comando nativo do seu ambiente gráfico, conforme a tabela abaixo.
 
 Normalmente tudo já existe em uma instalação desktop. O script verifica as ferramentas
@@ -100,7 +112,7 @@ Se faltar curl, por exemplo, instale-o pelo gerenciador da sua distribuição.
 |---|---|
 | Cinnamon / Linux Mint Cinnamon | `gsettings`, imagem do desktop |
 | GNOME / Ubuntu / Fedora Workstation | `gsettings`, variantes clara e escura quando disponíveis |
-| KDE Plasma 5/6 / Kubuntu | `qdbus6`, `qdbus` ou `qdbus-qt5`, script nativo do Plasma para os desktops/monitores existentes |
+| KDE Plasma 5/6 / Kubuntu | `qdbus6`, `qdbus` ou `qdbus-qt5` para o desktop; `kwriteconfig6/5` para o bloqueio |
 | MATE / Ubuntu MATE | `gsettings`, imagem do desktop MATE |
 | Xfce / Xubuntu | `xfconf-query`, imagens dos monitores e workspaces já configurados |
 | LXDE | `pcmanfm`, perfil padrão da sessão LXDE |
@@ -115,17 +127,47 @@ X11 e Wayland. No Xfce, novos monitores/workspaces devem ter suas configuraçõe
 fundo criadas pelo desktop antes da atualização. Perfis personalizados do PCManFM
 precisam de adaptação.
 
-### Tela de bloqueio
+### Desktop, bloqueio e tela de login
 
-Este script configura **somente o papel de parede**. Onde o bloqueador nativo acompanha
-o fundo do desktop, como normalmente acontece no Cinnamon e GNOME, a imagem também
-aparece no bloqueio, possivelmente desfocada pelo sistema. Nos demais casos, o bloqueio
-mantém suas próprias configurações. Não altera a tela de login do GDM, SDDM ou LightDM.
+São três superfícies diferentes. A compatibilidade depende dos componentes
+instalados, não apenas do nome da distribuição:
 
-Se um slideshow, extensão ou outro gerenciador de wallpaper estiver ativo, ele poderá
-trocar a imagem novamente. O script respeita essas configurações.
-No Plasma, seleciona o plugin padrão de imagem para aplicar o arquivo. O usuário pode
-escolher outro plugin novamente pelas configurações; nenhuma opção é bloqueada.
+| Componente | Implementação | Limite |
+|---|---|---|
+| Cinnamon | Desktop e bloqueio nativo usam a mesma imagem | Bloqueador personalizado pode ter outra configuração |
+| GNOME | Fundo claro/escuro; chave do screensaver quando disponível | GNOME Shell moderno pode desfocar o fundo nativo |
+| KDE Plasma 5/6 | Desktop via D-Bus; bloqueio via `kwriteconfig5/6` | Requer ferramenta KConfig instalada |
+| MATE, Xfce, LXDE, LXQt | Wallpaper pelos adaptadores existentes | Fundo do bloqueio depende do bloqueador; emite aviso |
+| LightDM + Slick Greeter | Fundo público e `draw-user-backgrounds=false` | Configuração de uma máquina afeta todos os usuários |
+| LightDM + GTK Greeter | Fundo público, inclusive overrides existentes por monitor | Configuração de uma máquina afeta todos os usuários |
+| SDDM + Breeze/Breeze Dark/Debian Breeze | `theme.conf.user`, sem substituir o tema | Tema precisa existir e oferecer `General/background` |
+| GDM e outros temas/greeters | Sem alteração do login | Aviso explícito; nenhuma edição de recursos/tema do GDM |
+
+Linux Mint Cinnamon/LightDM é coberto pelos adaptadores Cinnamon e Slick.
+Ubuntu/GNOME cobre desktop e bloqueio; seu login GDM permanece sem suporte.
+Kubuntu/Fedora KDE/Arch KDE são atendidos quando usam SDDM/Breeze compatível.
+Debian/Xubuntu com LightDM GTK recebem a imagem antes do login; o bloqueador
+escolhido pode exigir integração adicional.
+
+Esses são adaptadores implementados, **não certificação visual de todas as
+versões**. Consulte os resultados do Actions e valide login, bloqueio, reboot,
+suspensão e múltiplos monitores nas máquinas que serão distribuídas.
+
+A imagem do login fica em
+`/usr/share/backgrounds/rolimnet-wallpaper/wallpaper`, legível sem acessar a pasta
+pessoal. É baixada por HTTPS durante a instalação e por um timer do sistema a
+cada hora, mesmo sem usuário conectado. Após reiniciar sem rede, o greeter pode
+usar a última imagem salva. Não reiniciamos LightDM/SDDM durante a instalação;
+a mudança aparece na próxima abertura do greeter ou após reiniciar a máquina.
+
+A configuração original é guardada em `/var/lib/rolimnet-wallpaper/`. A remoção
+restaura esse backup somente quando a configuração ainda corresponde à escrita
+pelo agente. Se um administrador editou o arquivo depois, preserva suas mudanças
+e informa onde ficou o backup. A imagem pública é mantida para evitar referências
+quebradas. Como a integração é global, removê-la afeta o login de todos os usuários.
+
+Slideshow, extensões e outros gerenciadores de fundo podem trocar a imagem.
+Nenhuma política impede o usuário de escolher outro wallpaper ou plugin.
 
 ## Funcionamento do agendamento
 
@@ -137,7 +179,8 @@ escolher outro plugin novamente pelas configurações; nenhuma opção é bloque
 - Não acorda o computador nem habilita linger. A sessão gráfica precisa estar acessível
   para aplicar o fundo; sem ela, a execução pode falhar e tentar novamente no próximo login.
 - Autostart registra o ambiente do login atual. Reaplica a imagem armazenada se ela
-  tem menos de 1 hora; caso contrário faz novo download.
+  tem menos de 1 hora; caso contrário reaplica o cache antes de tentar novo download.
+  Sem rede, o cache permanece aplicado e a falha de atualização é registrada.
 - Não depende de manter um terminal aberto.
 
 Para aplicar o novo agendamento em uma instalação existente, execute novamente
@@ -193,6 +236,20 @@ de escolher outro fundo pelas configurações do desktop, pode apagar as imagens
   comandos de monitores/variantes pode deixar uma aplicação parcial; a execução seguinte tenta novamente.
 - Ambiente da sessão armazenado como dados, sem `source` ou `eval`. Arquivos privados do usuário.
 
+## Arquivos globais do login compatível
+
+```text
+/usr/local/lib/rolimnet-wallpaper/agent.sh
+/usr/share/backgrounds/rolimnet-wallpaper/wallpaper
+/var/lib/rolimnet-wallpaper/             # backup e estado privados de root
+/etc/systemd/system/rolimnet-wallpaper-login.service
+/etc/systemd/system/rolimnet-wallpaper-login.timer
+```
+
+O serviço global usa uma cópia pertencente ao administrador e uma URL fixa.
+Não executa arquivos da pasta pessoal nem recebe imagens/caminhos do usuário.
+Não cria regras de sudo sem senha ou políticas de autorização automática.
+
 ## Arquivos criados automaticamente
 
 O usuário distribui apenas `install.sh`; o próprio script gera estes arquivos:
@@ -224,13 +281,29 @@ Respeita `XDG_CONFIG_HOME`, `XDG_DATA_HOME` e `XDG_STATE_HOME`.
 | Garantia de suporte por versão | Testes em VMs/máquinas reais: instalação, login, suspensão, rede offline, múltiplos monitores e remoção |
 
 Adicionar um desktop não significa que todo bloqueador dele acompanhará o wallpaper.
-O programa continuará sem travar configurações nem forçar alterações em bloqueadores.
+O programa mantém as opções de autenticação e de bloqueio automático.
 
 ## Testes e GitHub
 
+O workflow `.github/workflows/tests.yml` executa em **Ubuntu 24.04, Debian 12 e
+Fedora 43**, em containers, como usuário comum. Exercita o ciclo do agente,
+adaptadores de login em diretórios temporários, falhas de rede/autenticação,
+backups, schemas GSettings e KConfig reais. Esses testes não inicializam uma
+sessão gráfica nem certificam a aparência do greeter após reboot.
+
+Após a matriz passar, outro job gera o AppImage x86_64, verifica o conteúdo,
+repete os testes no agente extraído e publica AppImage, script e SHA256SUMS como
+artefato da execução. Push, pull request e disparo manual ativam o workflow.
+As ferramentas de empacotamento vêm dos canais oficiais `continuous` do AppImage;
+a versão desses downloads pode mudar entre builds.
+
+
 ```bash
-bash -n install.sh tests/test.sh
+bash -n install.sh
 bash tests/test.sh
+bash tests/test_appimage.sh
+bash tests/test_system.sh
+bash tests/test_desktop.sh
 ```
 
 Os testes executam instalação, atualização e remoção em diretórios XDG temporários,
@@ -246,3 +319,10 @@ Referências: [timers systemd](https://www.freedesktop.org/software/systemd/man/
 [scripting do Plasma](https://develop.kde.org/docs/plasma/scripting/api/),
 [Cinnamon Screensaver](https://github.com/linuxmint/cinnamon-screensaver/blob/master/README.md),
 [perfis do PCManFM-Qt](https://github.com/lxqt/pcmanfm-qt/wiki).
+
+Fontes dos adaptadores: [Slick Greeter](https://github.com/linuxmint/slick-greeter),
+[LightDM GTK Greeter](https://github.com/Xubuntu/lightdm-gtk-greeter/blob/master/data/lightdm-gtk-greeter.conf),
+[configuração de temas SDDM](https://github.com/sddm/sddm/wiki/Theming),
+[bloqueio Cinnamon](https://github.com/linuxmint/cinnamon-screensaver/blob/master/src/util/settings.py),
+[bloqueio GNOME Shell](https://github.com/GNOME/gnome-shell/blob/main/js/ui/unlockDialog.js),
+[bloqueio KDE](https://github.com/KDE/kscreenlocker/blob/master/greeter/greeterapp.cpp).
