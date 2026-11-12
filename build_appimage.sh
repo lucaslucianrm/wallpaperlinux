@@ -10,7 +10,7 @@ case "$arch" in x86_64|aarch64) ;; *) echo "Arquitetura não suportada: $arch" >
 stage=$(mktemp -d "$root/.appimage-build.XXXXXX")
 trap 'rm -rf -- "$stage"' EXIT
 appdir="$stage/Rolimnet.AppDir"
-install -d -m 0755 "$appdir/usr/bin"
+install -d -m 0755 "$appdir" "$appdir/usr" "$appdir/usr/bin"
 install -m 0755 "$root/install.sh" "$appdir/usr/bin/rolimnet-wallpaper"
 install -m 0755 "$root/appimage/AppRun" "$appdir/AppRun"
 install -m 0644 "$root/appimage/result.sh" "$appdir/result.sh"

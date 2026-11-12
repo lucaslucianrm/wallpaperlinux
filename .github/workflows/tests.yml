@@ -53,6 +53,7 @@ jobs:
             bash tests/test.sh
             bash tests/test_system.sh
             bash tests/test_appimage.sh
+            bash tests/test_build.sh
             REQUIRE_KDE=1 bash tests/test_desktop.sh
           '
 
